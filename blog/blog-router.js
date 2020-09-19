@@ -24,6 +24,45 @@ router.post("/api/posts", (req,res)=>{
     })
 })
 
+router.post("/api/posts/:id/comments", (req,res)=>{
+    const id= +req.params.id
+    const body=req.body
+
+    Blog.findById(id)
+    .then(post=>{
+        if(post[0]){
+            body.post_id=id
+
+            Blog.insertComment(req.body)
+            .then((comment)=>{
+                res.status(201).json(comment)
+                    })
+            .catch((err)=>{
+                console.log(err)
+                res.status(500).json({message: "There was an error while saving the comment to the database"})
+            })
+        }else{
+            res.status(404).json({message: "The post with the specified ID does not exist"})
+        }})
+    .catch(err=>{
+        res.status(500).json({message: "Error finding post"})
+    })
+
+})
+
+// router.post("/api/posts/:id/comments", (req,res)=>{
+//     if(!req.body.text){
+//         return res.status(400).json({message: "Please provide text for the comment"})
+//     }
+//     Blog.insertComment(req.body)
+//     .then((comment)=>{
+//         res.status(201).json(comment)
+//             })
+//             .catch((err)=>{
+//                 console.log(err)
+//                 res.status(500).json({message: "There was an error while saving the comment to the database"})
+//             })
+// })
 
 router.get("/api/posts", (req,res)=>{
     Blog.find(req.query)
@@ -46,6 +85,23 @@ router.get("/api/posts/:id", (req,res)=>{
         res.status(500).json({
             message: "The post information could not be retrieved"
         })
+    })
+
+})
+
+router.get("/api/posts/:id/comments", (req,res)=>{
+
+    Blog.findCommentById(req.params.id)
+    .then(comment=>{
+        if(comment){
+            res.status(200).json(comment)
+        }else{
+            res.status(404).json({message: "The post with the specified ID does not exist"})
+        }
+    })
+    .catch(err=>{
+        console.log(err)
+        res.status(500).json({message: "The comment information could not be retrieved"})
     })
 
 })
